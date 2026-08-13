@@ -4,7 +4,7 @@ A black-box penetration test of the **WestWild: 1** vulnerable Linux machine, ta
 
 > **Lab / educational project.** WestWild is a deliberately vulnerable boot-to-root virtual machine. All testing was performed against my own copy on an **isolated virtual network** (private `192.168.64.x` addresses). Never test systems you don't own or lack permission to assess.
 
-📄 **Full professional report (PDF):** [WestWild_Penetration_Test_Report.pdf](WestWild_Penetration_Test_Report.pdf) — a formal 14-page penetration test report: cover page, executive summary, methodology, a step-by-step attack narrative with evidence, and a findings & remediation section with severity ratings.
+📄 **Full professional report (PDF):** [WestWild_Penetration_Test_Report.pdf](westwild-ctf-writeup/WestWild_Penetration_Test_Report.pdf) — a formal 14-page penetration test report: cover page, executive summary, methodology, a step-by-step attack narrative with evidence, and a findings & remediation section with severity ratings.
 
 ---
 
@@ -48,7 +48,7 @@ Three services exposed:
 
 The scan also flagged **SMB message signing disabled** and **guest access permitted** — a strong hint that anonymous SMB enumeration would pay off.
 
-![Nmap scan](screenshots/01-nmap-scan.png)
+![Nmap scan](westwild-ctf-writeup/screenshots/01-nmap-scan.png)
 
 ## 2. SMB Enumeration — enum4linux
 
@@ -61,9 +61,9 @@ Anonymous (null-session) enumeration succeeded and revealed:
 - **Shares:** `print$`, `wave` (commented *"WaveDoor"*), `IPC$`
 - **Weak password policy:** minimum length 5, complexity **disabled**
 
-![enum4linux — SMB session and workgroup](screenshots/02-enum4linux-smb.png)
-![enum4linux — users and shares](screenshots/03-enum4linux-users-shares.png)
-![enum4linux — password policy](screenshots/04-enum4linux-password-policy.png)
+![enum4linux — SMB session and workgroup](westwild-ctf-writeup/screenshots/02-enum4linux-smb.png)
+![enum4linux — users and shares](westwild-ctf-writeup/screenshots/03-enum4linux-users-shares.png)
+![enum4linux — password policy](westwild-ctf-writeup/screenshots/04-enum4linux-password-policy.png)
 
 ## 3. Anonymous Share Access — First Flag
 
@@ -75,7 +75,7 @@ smb: \> ls
 smb: \> get FLAG1.txt
 ```
 
-![smbclient — anonymous access to the wave share](screenshots/05-smb-share-access.png)
+![smbclient — anonymous access to the wave share](westwild-ctf-writeup/screenshots/05-smb-share-access.png)
 
 `FLAG1.txt` was Base64-encoded. Decoding it revealed the first flag **and** SSH credentials for the `wavex` user:
 
@@ -86,7 +86,7 @@ echo 'RmxhZ...ZW9wZW4K' | base64 -d
 - 🚩 **FLAG 1** — `Flag1{Welcome_T0_THE-W3ST-W1LD-B0rder}`
 - 🔑 Recovered credentials — `wavex : door+open`
 
-![Base64 decode of FLAG1](screenshots/06-flag1-base64-decode.png)
+![Base64 decode of FLAG1](westwild-ctf-writeup/screenshots/06-flag1-base64-decode.png)
 
 ## 4. Initial Foothold — SSH as wavex
 
@@ -96,7 +96,7 @@ ssh wavex@192.168.64.14      # password: door+open
 
 A check of privileges (`sudo su` / `sudo -l`) confirmed **wavex is not in the sudoers file** — no direct path to root. Time to pivot through another user.
 
-![SSH foothold as wavex](screenshots/07-ssh-foothold-wavex.png)
+![SSH foothold as wavex](westwild-ctf-writeup/screenshots/07-ssh-foothold-wavex.png)
 
 ## 5. Horizontal Privilege Escalation — wavex → aveng
 
@@ -109,7 +109,7 @@ cat *
 # echo "password:kaizen+80"
 ```
 
-![World-readable script leaking aveng's credentials](screenshots/08-privesc-credential-leak.png)
+![World-readable script leaking aveng's credentials](westwild-ctf-writeup/screenshots/08-privesc-credential-leak.png)
 
 ```bash
 su aveng      # password: kaizen+80
@@ -128,7 +128,7 @@ root@WestWild:~# cat FLAG2.txt
 - 🚩 **FLAG 2** — `Flag2 { WELCOME TO 67 84 70 }`
 - ✅ **Root access confirmed — target fully compromised.**
 
-![Root access and FLAG 2](screenshots/09-root-flag2.png)
+![Root access and FLAG 2](westwild-ctf-writeup/screenshots/09-root-flag2.png)
 
 ---
 
